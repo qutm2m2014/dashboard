@@ -16,14 +16,14 @@ class tempData(db.Model):
 
 @app.route("/")
 def send_data():
-	data = tempData.query.all()
+	data = reversed(tempData.query.order_by(tempData.rDate.desc()).limit(10).all())
 	temp_list = [['Time', 'Temprature']]
 	for atom in data:
 		atoms = [atom.rDate, atom.temp]
 		temp_list.append(atoms)
-	return render_template("graph.html", temp_list = temp_list)
+	return render_template("index.html", temp_list = temp_list)
       
 
 if __name__ == "__main__":
 
-    app.run(host= 'localhost', port=3000)
+    app.run(host= 'localhost', port=3001)
