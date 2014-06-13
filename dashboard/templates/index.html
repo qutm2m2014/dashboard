@@ -55,15 +55,15 @@
             height = chart.height() - margin.top - margin.bottom,
             aspect = width / height;
 
+        console.log(d3.extent(data, dateFn));
         var x = d3.scale.linear()
             .domain(d3.extent(data, dateFn))
             .range([0, width]);
 
         console.log(d3.extent(data, valueFn));
         var y = d3.scale.linear()
-            .domain([25,29])
-            .range([height,0]);
-        console.log(y(25))
+            .domain(d3.extent(data, valueFn))
+            .range([0, height]);
 
         var line = d3.svg.line()
             .x(function(d, i) {
@@ -72,32 +72,28 @@
             .y(function(d, i) {
                 return y(valueFn(d))
             });
+        console.log(line);
 
         var svg = d3.select("#chart_div").append("svg:svg")
             .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .attr("transform","translate(" + margin.top + "," + margin.left + ")");
-
-
-        // var xAxis = d3.svg.axis().scale(x).orient("bottom");
-        // svg.append("svg:g")
-        //     .attr("class", "xAxis")
-        //     .attr("transform", "translate(0," + height + ")")
-        //     .call(xAxis);
-
-        var yAxis = d3.svg.axis().scale(y).orient("left");
-        svg.append("svg:g")
-            .attr("class","yAxis")
-            .attr("transform", "translate(25,0)")
-            .call(yAxis);
-
+            .attr("height", height + margin.top + margin.bottom);
 
         var path = svg.append('path')
+            .datum(data)
             .attr('class', 'line')
-            .attr('d', line(data))
+            .attr('d', line)
             .style('fill', 'none')
             .style('stroke', '#FB5050')
-            .style('stroke-width', '2px')
+            .style('stroke-width', '2px');
+
+        d3.select(window).on('resize', resize);
+
+        function resize() {
+            var targetWidth = container.width();
+            svg.attr("width", targetWidth);
+            svg.attr("height", Math.round(targetWidth / aspect));
+            x.range([0, width]);
+        }
 
         // Create the data table.
         // var data = new google.visualization.arrayToDataTable(JSON.parse(temp_list));
