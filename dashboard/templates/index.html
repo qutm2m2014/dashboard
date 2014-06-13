@@ -7,47 +7,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
 
-    <!-- Core CSS - Include with every page -->
-
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-
     <link href="{{ url_for('static', filename='font-awesome/css/font-awesome.css') }}" rel="stylesheet">
-
-    <!-- Page-Level Plugin CSS - Dashboard -->
-
-    <link href="{{ url_for('static', filename='css/plugins/morris/morris-0.4.3.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/plugins/timeline/timeline.css') }}" rel="stylesheet">
-    <!-- SB Admin CSS - Include with every page -->
     <link href="{{ url_for('static', filename='css/sb-admin.css') }}" rel="stylesheet">
-    
+
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <style>
+    line.crisp {
+        shape-rendering: crispEdges;
+    }
+    </style>
     <script type="text/javascript">
-      // Load the Visualization API and the piechart package.
-      google.load('visualization', '1.0', {'packages':['corechart']});
+    // Load the Visualization API and the piechart package.
+    // google.load('visualization', '1.0', {
+    //     'packages': ['corechart']
+    // });
 
-      // Set a callback to run when the Google Visualization API is loaded.
-      google.setOnLoadCallback(drawChart);
+    // Set a callback to run when the Google Visualization API is loaded.
+    // google.setOnLoadCallback(drawChart);
 
-      // Callback that creates and populates a data table,
-      // instantiates the pie chart, passes in the data and
-      // draws it.
-      function drawChart() {
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and
+    // draws it.
 
-        var temp_list = '{{ temp_list|tojson|safe }}';
+    function drawChart() {
+
+        var data = JSON.parse('{{ temp_list|tojson|safe }}'); //Tue, 27 May 2014 12:19:56 GMT
+        console.log(data);
+        var format = d3.time.format("%a, %d %B %Y %H:%M:%S")
+        var valueFn = function(d) {
+            return d.temp
+        }
+        var dateFn = function(d) {
+            return format.parse(d.date)
+        }
+        chart = $('#chart_div'),
+        container = chart.parent();
+        chart.height(300)
+
+        var margin = {
+            top: 20,
+            bottom: 20,
+            left: 20,
+            right: 20
+        },
+            width = chart.width() - margin.left - margin.right,
+            height = chart.height() - margin.top - margin.bottom,
+            aspect = width / height;
+
+        console.log(d3.extent(data, dateFn));
+        var x = d3.scale.linear()
+            .domain(d3.extent(data, dateFn))
+            .range([0, width]);
+
+        console.log(d3.extent(data, valueFn));
+        var y = d3.scale.linear()
+            .domain(d3.extent(data, valueFn))
+            .range([0, height]);
+
+        var line = d3.svg.line()
+            .x(function(d, i) {
+                return x(dateFn(d))
+            })
+            .y(function(d, i) {
+                return y(valueFn(d))
+            });
+        console.log(line);
+
+        var svg = d3.select("#chart_div").append("svg:svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom);
+
+        var path = svg.append('path')
+            .datum(data)
+            .attr('class', 'line')
+            .attr('d', line)
+            .style('fill', 'none')
+            .style('stroke', '#FB5050')
+            .style('stroke-width', '2px');
+
+        d3.select(window).on('resize', resize);
+
+        function resize() {
+            var targetWidth = container.width();
+            svg.attr("width", targetWidth);
+            svg.attr("height", Math.round(targetWidth / aspect));
+            x.range([0, width]);
+        }
+
         // Create the data table.
-        var data = new google.visualization.arrayToDataTable(JSON.parse(temp_list));
+        // var data = new google.visualization.arrayToDataTable(JSON.parse(temp_list));
         // Set chart options
-        var options = {
-                        width: 980,
-                        height: 590,
-                        pointSize: 10,
-                        colors: ['green']
-                       };
+        // var options = {
+        //     width: 600,
+        //     height: 400,
+        //     pointSize: 3,
+        //     colors: ['green']
+        // };
 
         // Instantiate and draw our chart, passing in some options.
-        var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
-        chart.draw(data, options);
-      }
+        // var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+        // chart.draw(data, options);
+
+    }
     </script>
 
 </head>
@@ -68,10 +130,10 @@
                             <div class="input-group custom-search-form">
                                 <input type="text" class="form-control" placeholder="Search...">
                                 <span class="input-group-btn">
-                                <button class="btn btn-default" type="button">
-                                    <i class="fa fa-search"></i>
-                                </button>
-                            </span>
+                                    <button class="btn btn-default" type="button">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </span>
                             </div>
                             <!-- /input-group -->
                         </li>
@@ -79,20 +141,6 @@
                             <a href="index.html"> Dashboard</a>
                         </li>
                         <li>
-                            <a href="#"> Charts<span class="fa arrow"></span></a>
-                            <ul class="nav nav-second-level">
-                                <li>
-                                    <a href="flot.html">Flot Charts</a>
-                                </li>
-                                <li>
-                                    <a href="morris.html">Morris.js Charts</a>
-                                </li>
-                            </ul>
-                            <!-- /.nav-second-level -->
-                        </li>
-                        
-                        <li>
-                        
                             <a href="#"> Logout</a>
                         </li>
                     </ul>
@@ -131,25 +179,25 @@
                             <!-- Tab panes -->
                             <div class="tab-content">
                                 <div class="tab-pane fade in active" id="home-pills">
-                                     <div id="chart_div"></div>
+                                    <div id="chart_div"></div>
                                 </div>
                                 <div class="tab-pane fade" id="profile-pills">
-                                    
+
                                     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                                 </div>
                                 <div class="tab-pane fade" id="messages-pills">
-                                    
+
                                     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                                 </div>
-                                
+
                             </div>
-                           
+
                         </div>
                         <!-- /.panel-body -->
                     </div>
                     <!-- /.panel -->
-                 
-                    
+
+
                 </div>
                 <!-- /.col-lg-8 -->
                 <div class="col-lg-4">
@@ -160,51 +208,55 @@
                         <!-- /.panel-heading -->
                         <div class="panel-body">
                             <div class="list-group">
-                                 <a href="#" class="list-group-item">
+                                <a href="#" class="list-group-item">
                                     <i class="fa fa-money fa-fw"></i> Start Showing Advertisements
-                                    <span class="pull-right text-muted small"><em>12:30 PM</em>
+                                    <span class="pull-right text-muted small">
+                                        <em>12:30 PM</em>
                                     </span>
                                 </a>
                                 <a href="#" class="list-group-item">
                                     <i class="fa fa-bolt fa-fw"></i> Electricity Usage is Good
-                                    <span class="pull-right text-muted small"><em>11:13 AM</em>
+                                    <span class="pull-right text-muted small">
+                                        <em>11:13 AM</em>
                                     </span>
                                 </a>
                                 <a href="#" class="list-group-item">
                                     <i class="fa fa-warning fa-fw"></i> Kitchen is On Fire!
-                                    <span class="pull-right text-muted small"><em>10:57 AM</em>
+                                    <span class="pull-right text-muted small">
+                                        <em>10:57 AM</em>
                                     </span>
                                 </a>
                             </div>
                             <!-- /.list-group -->
-                            <a href="#" class="btn btn-default btn-block">View All Alerts</a>
+                            <a href="/alerts" class="btn btn-default btn-block">View All Alerts</a>
                         </div>
                         <!-- /.panel-body -->
                     </div>
                     <!-- /.panel -->
-                    
+
+                </div>
+                <!-- /.row -->
             </div>
-            <!-- /.row -->
+            <!-- /#page-wrapper -->
+
         </div>
-        <!-- /#page-wrapper -->
+        <!-- /#wrapper -->
 
-    </div>
-    <!-- /#wrapper -->
+        <!-- Core Scripts - Include with every page -->
+        <script src="{{ url_for('static', filename='js/jquery-1.10.2.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/plugins/metisMenu/jquery.metisMenu.js') }}"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+        <script>
+        drawChart();
+         // var socket = io();
+         // io.on('temperature/message', function(msg) {
 
-    <!-- Core Scripts - Include with every page -->
-    <script src="{{ url_for('static', filename='js/jquery-1.10.2.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/plugins/metisMenu/jquery.metisMenu.js') }}"></script>
-
-    <!-- Page-Level Plugin Scripts - Dashboard -->
-    <script src="{{ url_for('static', filename='js/plugins/morris/raphael-2.1.0.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/plugins/morris/morris.js') }}"></script>
-
-    <!-- SB Admin Scripts - Include with every page -->
-    <script src="{{ url_for('static', filename='js/sb-admin.js') }}"></script>
-
-    <!-- Page-Level Demo Scripts - Dashboard - Use for reference -->
-    <script src="{{ url_for('static', filename='js/demo/dashboard-demo.js') }}"></script>
+         // });
+        </script>
+        <!-- SB Admin Scripts - Include with every page -->
+        <script src="{{ url_for('static', filename='js/sb-admin.js') }}"></script>
 
 </body>
 
