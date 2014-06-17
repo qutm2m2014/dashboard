@@ -1,20 +1,18 @@
 from flask import Flask, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
-# from config import DevConfig, ProductionConfig
-# import os
+from .config import DevConfig, ProductionConfig
+import os
 
 
-# def configure_app(app):
-#     if os.environ.get("APP_ENV") is "PRODUCTION":
-#         app.config.from_object(ProductionConfig)
-#         print app.config
-#     else:
-#         app.config.from_object(DevConfig)
-#     return app
+def configure_app(app):
+    if os.environ.get("APP_ENV") is "PRODUCTION":
+        app.config.from_object(ProductionConfig)
+    else:
+        app.config.from_object(DevConfig)
 
 
 app = Flask(__name__)
-# app = configure_app(app)
+configure_app(app)
 db = SQLAlchemy(app)
 
 
