@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/static/images/AppIcon57x57.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/images/AppIcon72x72.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/images/AppIcon72x72@2x.png" />
+    <title>Smart Screen</title>
+    <style>
+    html,
+    body {
+        min-height: 100%;
+        height: 100%;
+        margin: 0;
+    }
+    #imageHolder {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+        background: url("/static/images/warmup.jpg") no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="imageHolder">
+        &nbsp;
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.js"></script>
+    <script>
+    function sse() {
+        var source = new EventSource('/screenloader');
+        var first = true;
+        source.onmessage = function(e) {
+            console.log(e.data)
+            if (first) {
+                first = false
+                return
+            }
+            image = $('#imageHolder');
+            image.fadeOut(1000, function() {
+                image.css('background-image', "url(" + e.data + ")");
+                image.fadeIn(1000);
+            });
+        };
+    }
+    sse();
+    </script>
+</body>
+
+</html>
